@@ -6,97 +6,72 @@
 ## Nuestro Objetivo
 
 Nuestro objetivo es crear un proyecto que permita realizar inpainting de imagenes con herramientas de Análisis Numérico de Ecuaciones en Derivadas Parciales. El inpainting consiste en reconstruir partes 
-faltantes de imagenes a partir de la información sí disponible de la imagen. Nuestro approach será dividir la imagen en dos imágenes, una conteniendo la textura y otra conteniendo la estructura, y luego
+faltantes de imagenes a partir de la información sí disponible de la imagen. Nuestro *approach* será dividir la imagen en dos imágenes, una conteniendo la textura y otra conteniendo la estructura, y luego
 completar las imagenes por separado. Para completar las imagenes, en el caso de la estructura, se modela como un problema de Dirichlet en la parte faltante de la imagen, para la textura, se aplica un de
-síntesis de texturas. Para la separación se utiliza minimización de variación total, el cual queda caracterizado mediante una EDP.
+síntesis de texturas. Para la separación se utiliza difusión Perona-Malik (*a.k.a.* anisotrópica).
 
 ## Lo Que Hemos Implementado
 
-Hasta ahora, hemos implementado un proceso que realiza inpainting de estructura, un proceso que realiza inpainting de textura (solamente imágenes en blanco y negro) y un proceso que separa las imágenes
-en textura-estructura. Además se implementó una interfaz de usuario que permite seleccionar fácilmente el área para realizar el inpainting.
+Hemos logrado implementar un porgrama que recibe una imagen a color (RGB) y permite seleccionar la zona a restaurar. Separando la imagen en cada uno de sus canales RGB y cada uno de esto canales en textura y estructura, se logra restaurar cada una de las 6 imágenes resultantes para luego combinarlas en una sola imagen restaurada.
 
 ## Cómo Funciona
 
 En adelante, una función de imagen será una función que toma valores en un rectángulo de $\mathbb{R}^2$ y entrega valores en $[0, 1]$. En una imagen en blanco y negro, esto se puede interpretar como una asignación de luz donde 0 es negro y 1 es blanco.
 Una imagen RGB sería entonces un objeto de la forma $(u_R, u_G, u_B)$ donde cada $u_i$ es una función de imagen. Todos los procesos se realizan en cada uno de estos canales RGB de manera independiente.
 
-### Descomposición Textura-Estructura
+### Difusión Anisotrópica (Perona-Malik)
 
-Se toma como punto de partida el modelo propuesto por [3]: Asumiendo una imagen $f \in L^2(\mathbb{R}^2)$ (se refleja una imagen infinitas veces para teselar el plano), se quiere descomponer tal que $f = u + v$,
-donde $u$ capture la estructura y $v$ la textura (y el ruido) con $u \in \text{BV}(\mathbb{R}^2)$. Para esto se resuelve
-
-$$
-\inf_u \left( E(u) = \int |\nabla u| + \lambda \|v\|_*, f = u + v \right)
-$$
-
-donde $\|\bullet\|_*$ es el ínfimo de todas las normas $L^\infty$ de las funciones $|g|$ donde $g = g_1 \times g_2$ y $|g(x,y)| = \sqrt{g_1(x,y)^2 + g_2(x,y)^2}$ que cumplen $v = \partial_x g_1 + \partial_y g_2$ con $g_1, g_2 \in L^\infty(\mathbb{R}^2)$.
-(se demuestra además que \(v\) siempre se puede descomponer de la manera recién mencionada).
-
-Con el objetivo de resolver este problema variacional, [4] propone la siguiente aproximación:
-
-$$
-\inf_{u, g_1, g_2} \left( G_p(u, g_1, g_2) = \int |\nabla u| + \lambda \int |f - u - \partial_x g_1 - \partial_y g_2|  dx dy + \mu \left[ \int \left( \sqrt{g_1^2 + g_2^2} \right)^p \, dx \, dy \right]^{1/p} \right),
-$$
-
-con $\lambda, \mu > 0$ son parámetros y $p \to \infty$ (en un sentido formal).
-
-Minimizando de manera formal la energía recién mencionada, se obtienen las siguientes ecuaciones de Euler-Lagrange
-
-$$
-\begin{align*} u &= f - \partial_x g_1 - \partial_y g_2 + \frac{1}{2\lambda} \text{div}\left( \frac{\nabla u}{|\nabla u|} \right),\\
-\mu (\|\sqrt{g_1^2 + g_2^2}\|)^{1-p} (\sqrt{g_1^2 + g_2^2})^{p-2} g_1 &= 2\lambda \left( \partial_x (u - f) + \partial_{xx} g_1 + \partial_{xy} g_2 \right),\\
-\mu (\|\sqrt{g_1^2 + g_2^2}\|)^{1-p} (\sqrt{g_1^2 + g_2^2})^{p-2} g_2 &= 2\lambda \left( \partial_y (u - f) + \partial_{xy} g_1 + \partial_{yy} g_2 \right). \end{align*}
-$$
-
-donde $\sqrt{g_1^2 + g_2^2}$ en la segunda y tercera ecuación están dentro de la norma $p$.
-
-
-En el caso de dominio finito, se asocian las siguientes condiciones de borde
-
-$$
-\begin{align*}
-\frac{\nabla u}{|\nabla u|} &= 0,\\
-(f-u-\partial_x g_1 - \partial_y g_2)n_x &= 0,\\
-(f - u - \partial_x g_1 - \partial_y g_2)n_y &= 0.
-\end{align*}
-$$
-
-la descomposición final es entonces
-
-$$
-f \approx u + \underbrace{\partial_x g_1 + \partial_y g_2}_{v}.
-$$
-
-#### Resultado de Descomposición Textura-Estructura
-
-Como es estandard en procesamiento de imágenes, utilizamos la imagen Barbara como imagen test ($f$):
-
-![barbara_original](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/f25d2374-51c1-4f63-aa0e-c5ce28416ee5)
-
-La textura de la imagen obtenida es ($v + \text{mean}(f)$, se translada para poder visualizar):
-
-![Barbara_texture](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/749d7051-ba83-4bdf-a869-2aeb866567eb)
-
-y la estructura es ($u$):
-
-![Barbara_structure](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/427cff3b-40b9-4f87-8096-78ef8bdf4a2f)
-
-La suma de la estructura y la textura (que tienen el objetivo de recuperar la imagen original) es $(u + v)$
-
-![Barbara_mixed](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/c42b5882-421a-44c2-80bf-26e3420a34c1)
-
-#### Comentario Sobre Los Resultados
-Se alcanza un resultado similar a los presentes en [4] aun que los resultados serían mejores si $v$ capturace más textura. Hay
-detalles que se pierden en el proceso. Elegir mejor los parámetros es necesario. Más pruebas son necesarias con imágenes a color.
-
-### Inpainting de estructura
-
-Primero, con el objetivo de reducir el ruido de la imagen, se realiza un pre-procesamiento de la imagen resolviendo la ecuación de difusión anisotrópica [1]
+Comenzamos presentando una herramienta fundamental para esta tarea: la difusión anisotrópica. Se quiere reducir el ruido de una imagen manteniendo sus bordes: suavizar la imagen sin alterar los bordes de las figuras contenidas en ella. Para esto, se propone la siguiente ecuación [1].
 
 $$\frac{\partial I}{\partial t} = \text{div}\left( g\left(\|\nabla I\|\right) \nabla I \right),$$
 
 donde $I$ es la función de imagen, $\nabla$ y $\text{div}$ son el gradiente y la divergencia respectivamente, y $g$ es una función (suficientemente regular) de conductividad que debe ser no-negativa, monótona decreciente que cumple $g(0) = 1$.
-En nuestro caso, usamos la función $g(x) = \text{exp}\left(-\frac{x^2}{K^2}\right)$, donde $K$ es la constante de difusión. El objetivo de esto es suavizar la imagen en las partes donde el gradiente es cercano a $0$, preservando así la forma de la figura.
+En nuestro caso, usamos la función $g(x) = \text{exp}\left(-\frac{x^2}{K^2}\right)$, donde $K$ es la constante de difusión. El objetivo de esto es suavizar la imagen en las partes donde el gradiente es cercano a $0$, preservando así la forma de la figura. La imagen suavizada será la solución de esta ecuación en *steady state*.
+
+#### Resultado de Difusión Anisotrópica
+
+El esquema numérico implementado es el presentado en [1].
+
+Usamos la siguiente imagen como condición inicial.
+
+![bungee_input](https://github.com/user-attachments/assets/61d28f5c-740e-419f-b22b-f9155642fc53)
+
+
+Obteniendo el siguiente resultado para $K=0.05$
+
+![bungee1](https://github.com/user-attachments/assets/da9a200a-d2cc-4821-8ae0-b4f8b2966786)
+
+
+y el siguiente resultado para $K = 0.1$
+
+![bungee2](https://github.com/user-attachments/assets/1bbe72e1-3c80-4d20-ab4a-a01d3b59d294)
+
+#### Comentario Sobre Los Resultados
+Los resultados son buenos. Se logra eliminar los detalles de la imagen y es posible cuantificar esto mediante un cambio en la constante $K$ de difusión. Es posbile alcanzar una imagen tipo *cartoon*.
+
+### Separación Estructura-Textura
+
+Para el método a implementar, es necesario separar la textura y la estructura. Para esto, utilizamos la difusión Perona-Malik para obtener una imagen *cartoon* (que corresponde a la estructura) y luego, restandole esta esta imagen a la imagen original, rescatamos la textura. Con esto se cumple la propiedad $f = u + v$ donde $f$ es la imagen original y $u$, $v$ la estructura y textura respectivamente.
+
+#### Resultados de Separación Textura-Estructura
+
+Utilizamos una versión más actualizada y más ética de Lenna como *input*.
+
+![new_lenna](https://github.com/user-attachments/assets/ea25903a-2d53-4c53-8ebe-650fc38cd40f)
+
+Realizando Perona-Malik con $300$ iteraciones (*cf.* [1]) y $K=0.8$, se obtiene la estructura y textura (respectivamente).
+
+![amooth_lenna1](https://github.com/user-attachments/assets/59e1b4c9-bdf3-4efe-8a91-c489ded58804)
+![noisy_lenna1](https://github.com/user-attachments/assets/9b17dcd7-33b0-4b7a-a1f7-a08f333bbf2d)
+
+Realizando Perona-Malik con $3000$ iteraciones (*cf.* [1]) y $K=0.05$, se obtiene la estructura y textura (respectivamente).
+
+![smooth_lenna2](https://github.com/user-attachments/assets/7534f134-a788-4a2c-88b0-dbe6214641bd)
+![noisy_lenna2](https://github.com/user-attachments/assets/1af94a1f-3046-480c-8ab6-e07c548c6a6d)
+
+### Inpainting de estructura
+
+Primero, con el objetivo de reducir el ruido de la imagen, se realiza un pre-procesamiento de la imagen resolviendo la ecuación de difusión anisotrópica [1,2]
 
 Luego se realiza el inpainting estructural, que se realiza mediante la solución de la ecuación [2]
 
@@ -112,7 +87,6 @@ considerable al proceso). Las iteraciones estándar que utilizamos son de 2 iter
 
 Acá un ejemplo de lo que se logró con 10000 iteraciones de inpainting estructural (mezclado con difusión anisotrópica en proporción 2:15) y 3000 iteraciones de difusión anisotrópica como pre-procesamiento.
 Esto se realizó para cada uno de los 3 canales de RGB con lo que la cantidad de iteraciones se triplica. El proceso total tomó alrededor de 10 minutos en un Lenovo IdeaPad3 16GB RAM, Ryzen 7, implementando las partes de alto costo computacional en Julia.
-(Usé mi foto de perfil de Microsoft porque estoy en un PC nuevo y es la única que tenía, los resultados fueron buenos así que voy a usarla como ejemplo. Más adelante esta imagen será remplazada).
 
 La imagen original que utilizamos es:
 
@@ -129,9 +103,7 @@ su restauración mediante inpainting es:
 #### Comentario Sobre Los Resultados
 
 Los resultados fueron relativamente buenos, con el problema de que la foto se suavizó demasiado. El proceso de inpainting que estamos realizando es local (solo modifica la imagen donde está dañada),
-con lo que el problema es la difusión anisotrópica. Es necesario ajustar los parámetros para evitar este tipo de resultados. Intentaremos modificar los parámetros de manera dinámica como es sugerido en [1].
-
-Una vez realizado esto, continuaremos con el inpainting de textura. El objetivo final es descomponer la imagen en estructura y textura para aplicar los procesos por separado.
+con lo que el problema es la difusión anisotrópica; esto no es un problema una vez separemos la textura de la estructura antes de realizar el proceso.
 
 ### Inpainting Texturado
 
