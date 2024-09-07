@@ -107,7 +107,25 @@ con lo que el problema es la difusión anisotrópica; esto no es un problema una
 
 ### Inpainting Texturado
 
-[...]
+Esta es la únia herramienta del proyecto que no se basa en EDP. Se define una textura como un patron infinito en 2 dimensiones. Un ejemplo de patrón, es una mesa infinita cubierta completamente de manzanas, incluso la misma superficie de la mesa, por si sola, sería una textura. Para iniciar, planteamos la solución presentada en [5] para el problema de sintesis de textura. 
+
+#### *Image Quilting*
+
+El problema de síntesis de textura consiste en, a partir de una muestra de una textura (un parche de textura finito), lograr recontruir lo textura original. La solución propuesta en [5] tiene el nomrbe de *Image Quilting*.
+
+El *Image Quilting* consiste en dividir la muestra inicial en bloques de $n\times n$ pixeles y elegir uno al azar como punto de partida. Luego, en orden *raster scan*, se van agregando nuevos bloques de la muestra inicial hasta generar tanta textura como se desea. Un nuevo bloque agregado, queda superpuesto con el bloque de su izquierda y con el de arriba en los bordes (a continuación se mencona porque). La forma de elegir los bloques de textura que se agregan y la forma de agregarlos, queda resumida a continuación:
+1. Se recorre la muestra y se guardan todos los bloques de la muestra que tengan un error (más sobre esto adelante) bajo $\varepsilon$ en los bordes que se sobreponen con el bloque de la izquierda y el de arriba.
+2. De los bloques guardados en el paso anterior, se elije uno al azar y se agrega tal que los bordes queden superpuestos con el bloque de la izquierda y con el de arriba.
+3. Se genera un corte de error mínimo (más sobre esto a continuación) a lo largo de la intersección de los bloques.
+La siguiente imagen sacada del paper original [5] resume este proceso (en la imagen (a) se muestra que pasa si simplemente elegimos bloques al azar, en la imagen (b), que pasa si elegimos los bloques como se muestra en el paso 1. y 2. de la lista anterior, en la imagen (c) se muestra el resultado de incorporar, además, el paso 3. de la lista anterior).
+
+![image_quilting](https://github.com/user-attachments/assets/d9cb90f2-3a88-4a18-8f4b-243f0f85fe9e)
+
+En el paso 2. de la lista anterior, el error de solapamiento (que tanto difieren los bloques en los bordes) se cuantifica mediante
+
+#### Inpainting Texturado
+
+El inpainting de texturas se logra mediante la aplicación de *Image Quilting* a las partes faltantes de la imagen, utilizando como muestra lo que sí está presente en la imagen.
 
 ## Contribuyendo
 
@@ -135,3 +153,5 @@ Francisco Maldonado
 2. M. Bertalmio, G. Sapiro, V. Caselles, and C. Ballester, “Image inpainting,” in *Comput. Graph. (SIGGRAPH 2000)*, July 2000, pp. 417–424.
 3. Aubert, G., and Vese, L. (1997). A variational method in image recovery. SIAM J. Numer. Anal. 34(5), 1948–1979.
 4. L. Vese and S. Osher, “Modeling Textures with Total Variation Minimization and Oscillating Patterns in Image Processing,”, vol. 02-19, UCLA CAM Rep., May 2002.
+5. A. A. Efros and W. T. Freeman, "Image Quilting for Texture Synthesis and Transfer," in *Comput. Graph. (SIGGRAPH 2001)*, Aug. 2001, pp. 341–346.
+
