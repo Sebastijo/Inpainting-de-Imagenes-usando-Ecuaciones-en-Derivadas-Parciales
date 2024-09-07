@@ -121,11 +121,60 @@ La siguiente imagen sacada del paper original [5] resume este proceso (en la ima
 
 ![image_quilting](https://github.com/user-attachments/assets/d9cb90f2-3a88-4a18-8f4b-243f0f85fe9e)
 
-En el paso 2. de la lista anterior, el error de solapamiento (que tanto difieren los bloques en los bordes) se cuantifica mediante
+En el paso 2. de la lista anterior, el error de solapamiento (que tanto difieren los bloques en los bordes) se cuantifica mediante el uso de la norma $L^2$ sobre el valor de los pixeles. En el paso 3, el corte de menor error se calcula de la siguiente manera, siguiendo lo implementado en [5]:
 
-#### Inpainting Texturado
+El camino de costo mínimo a través de la superficie de error se calcula de la siguiente manera. Si $B_1$ y $B_2$ son dos bloques que se superponen a lo largo de su borde vertical (ver Figura 2c), siendo las regiones de superposición $B_1^{ov}$ y $B_2^{ov}$, respectivamente, entonces la superficie de error se define como:
+
+$$e = (B_1^{ov} - B_2^{ov})^2$$
+
+Para encontrar el corte vertical mínimo a través de esta superficie, se recorre $e$ (para $i = 2 \dots N$) y se calcula el error mínimo acumulativo $E$ para todos los caminos:
+
+$$E_{i,j} = e_{i,j} + \min(E_{i-1,j-1}, E_{i-1,j}, E_{i-1,j+1})$$
+
+Al final, el valor mínimo de la última fila en $E$ indicará el final del camino vertical mínimo a través de la superficie, y se puede rastrear hacia atrás para encontrar el camino del corte óptimo. Un enfoque similar se puede aplicar a las superposiciones horizontales. Cuando existen superposiciones verticales y horizontales, los caminos mínimos se encuentran en el medio, y se elige el mínimo general para el corte.
+
+#### Inpainting
 
 El inpainting de texturas se logra mediante la aplicación de *Image Quilting* a las partes faltantes de la imagen, utilizando como muestra lo que sí está presente en la imagen.
+
+#### Resultados
+
+Se realizó inpainting texturado para dos imágenes. La primera (zona faltante en negro) y su reconstrucción:
+
+![BW_texture_inpainting_damaged](https://github.com/user-attachments/assets/0e8caa5b-0eba-475b-af29-0856002b7680)
+![BW_texture_inpainitng_restores](https://github.com/user-attachments/assets/08f55e7b-b9e6-4a03-adef-8568c0257870)
+
+La segunda (zona a reparar en blanco) y su reconstrucción:
+
+![color_texture_inpainting_damaged](https://github.com/user-attachments/assets/84ee5476-b9a8-4bd0-8fb2-fa71938f66fd)
+![color_texture_inpainting_restored](https://github.com/user-attachments/assets/3a364406-3c10-4f3f-8cb1-50a141b830ef)
+
+#### Comentarios
+
+En la imagen en blanco y negro, se logra una reconstrucción de bastante alta calidad, siendo dificil reconocer que la foto alguna vez fue alterada. En el caso de la foto de color, es posible notar de mayor manera la reconstrucción. Esto se puede deber a la complejidad de la estructura o al hecho que la imagen tiene, en parte, estructura.
+
+### Inpainting texturado y estructurado
+
+Con estas, herramientas, podemos ahora separar una imágen en textura y estructura, aplicar inpainting texturado a la textura, aplicar inpainting estructurado a la estructura y luego unir nuevamente las imágens.
+
+Si $D$ es un operador que aplica difusión anisotrópica, $S$ un operador que aplica inpainting estructural sobre $\Omega$, $T$ un operador que aplica inpainting texturado sobre $\Omega$ e $I$ una imágen a la que queremos aplicar inpainting, entonces el inpainting texturado y estructurado $G$ se escribe como
+$$G(I) = S(D(I)) + T(I-D(I))$$
+
+#### Resultados
+
+![total_inpainting](https://github.com/user-attachments/assets/840535f7-b5a6-4551-a6ab-101f2f6a4c22)
+![total_texture_inpainting](https://github.com/user-attachments/assets/f901f0e4-259a-454b-856e-e63110b22c59)
+![total_structure_inpainting](https://github.com/user-attachments/assets/c986d4bc-50c4-4c58-97f5-974d4ff254fc)
+![main_dañada_restaurada](https://github.com/user-attachments/assets/80fff28d-5c51-430c-a51e-b2ecab9d974b)
+![main_original_restaurada](https://github.com/user-attachments/assets/d8d26847-2980-4b0d-98f8-419b4510afe2)
+
+#### Comentarios
+
+Se logra un inpainting bastante bueno, pero aún se logra ver levemente el lugar donde se realizó la restauración. El método es bastante sensible a los parámetros lo que dificulta elegirlos de manera óptima. El tiempo de computo, teniendo en consideración lo que se quiere realizar, es razonable, pero es suficientemente alto como para dificultar el descubrimiento de los buenos parámetros mediante prueba y error. A continuación algunos inpainting no-logrados debido a la perdida de estabilidad de los métodos numéricos.
+
+![main_error](https://github.com/user-attachments/assets/2f04ca9d-22c1-4b67-8be5-db9210b73c35)
+![Profile drawing_restored_1_5](https://github.com/user-attachments/assets/9f322a5b-aa37-4752-ad72-be335e2eaf81)
+![Profile drawing_restored_1](https://github.com/user-attachments/assets/3f1f56f3-42bf-49c7-97d9-b6d07942d41e)
 
 ## Contribuyendo
 
