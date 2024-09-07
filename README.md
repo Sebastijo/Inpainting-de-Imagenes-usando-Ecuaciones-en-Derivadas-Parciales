@@ -109,15 +109,6 @@ con lo que el problema es la difusión anisotrópica; esto no es un problema una
 
 [...]
 
-## Próximos Pasos
-La siguiente consituye una lista de las cosas que queremos mejorar/implementar.
-1. Probar la descomposición con imágenes a color.
-2. Mejorar la difusión anisotrópica utilizada en el inpainting de textura.
-3. Ajustar los parámetros de la descomposición.
-4. Mejorar lso parámetros del inpainting con textura.
-5. Generalizar el inpainting con textura para poder manejar imágens a color.
-6. Juntar todos los pasos en un solo programa, el objetivo final.
-
 ## Contribuyendo
 
 Si deseas contribuir a este proyecto, por favor sigue las siguientes instrucciones:
