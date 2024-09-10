@@ -5,7 +5,7 @@
 
 ## Nuestro Objetivo
 
-Nuestro objetivo es crear un proyecto que permita realizar inpainting de imagenes con herramientas de Análisis Numérico de Ecuaciones en Derivadas Parciales. El inpainting consiste en reconstruir partes 
+Nuestro objetivo es crear un proyecto que permita realizar inpainting de imagenes con herramientas de Análisis Numérico de Ecuaciones en Derivadas Parciales. Para esto, nos basaremos en [6]. El inpainting consiste en reconstruir partes 
 faltantes de imagenes a partir de la información sí disponible de la imagen. Nuestro *approach* será dividir la imagen en dos imágenes, una conteniendo la textura y otra conteniendo la estructura, y luego
 completar las imagenes por separado. Para completar las imagenes, en el caso de la estructura, se modela como un problema de Dirichlet en la parte faltante de la imagen, para la textura, se aplica un de
 síntesis de texturas. Para la separación se utiliza difusión Perona-Malik (*a.k.a.* anisotrópica).
@@ -203,4 +203,5 @@ Francisco Maldonado
 3. Aubert, G., and Vese, L. (1997). A variational method in image recovery. SIAM J. Numer. Anal. 34(5), 1948–1979.
 4. L. Vese and S. Osher, “Modeling Textures with Total Variation Minimization and Oscillating Patterns in Image Processing,”, vol. 02-19, UCLA CAM Rep., May 2002.
 5. A. A. Efros and W. T. Freeman, "Image Quilting for Texture Synthesis and Transfer," in *Comput. Graph. (SIGGRAPH 2001)*, Aug. 2001, pp. 341–346.
+6. M. Bertalmio, L. Vese, G. Sapiro, and S. Osher, *Simultaneous Structure and Texture Image Inpainting*, IEEE Trans. Image Process., vol. 12, no. 8, pp. 882–889, Aug. 2003.
 
