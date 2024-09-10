@@ -107,7 +107,7 @@ con lo que el problema es la difusión anisotrópica; esto no es un problema una
 
 ### Inpainting Texturado
 
-Esta es la únia herramienta del proyecto que no se basa en EDP. Se define una textura como un patron infinito en 2 dimensiones. Un ejemplo de patrón, es una mesa infinita cubierta completamente de manzanas, incluso la misma superficie de la mesa, por si sola, sería una textura. Para iniciar, planteamos la solución presentada en [5] para el problema de sintesis de textura. 
+Esta es la únia herramienta del proyecto que no se basa en EDP. Se define una textura como un patron infinito en 2 dimensiones. Un ejemplo de patrón, es una mesa infinita cubierta completamente de manzanas, incluso la misma superficie de la mesa, por si sola, sería una textura. Para iniciar, planteamos la solución presentada en [5], una mejora de la presentada en [7], para el problema de sintesis de textura. 
 
 #### *Image Quilting*
 
@@ -204,4 +204,5 @@ Francisco Maldonado
 4. L. Vese and S. Osher, “Modeling Textures with Total Variation Minimization and Oscillating Patterns in Image Processing,”, vol. 02-19, UCLA CAM Rep., May 2002.
 5. A. A. Efros and W. T. Freeman, "Image Quilting for Texture Synthesis and Transfer," in *Comput. Graph. (SIGGRAPH 2001)*, Aug. 2001, pp. 341–346.
 6. M. Bertalmio, L. Vese, G. Sapiro, and S. Osher, *Simultaneous Structure and Texture Image Inpainting*, IEEE Trans. Image Process., vol. 12, no. 8, pp. 882–889, Aug. 2003.
-
+7. A. A. Efros and T. K. Leung, *Texture Synthesis by Non-parametric Sampling*, in Proc. IEEE Int. Conf. Computer Vision, Corfu, Greece, Sept. 1999, pp. 1033–1038.
+8. S. Osher, A. Sole and L. Vese, "Image decomposition, image restoration, and texture modeling using total variation minimization and the H^-1 norm," Proceedings 2003 International Conference on Image Processing (Cat. No.03CH37429), 2003.
