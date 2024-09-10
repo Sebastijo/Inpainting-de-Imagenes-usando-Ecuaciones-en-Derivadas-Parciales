@@ -190,7 +190,7 @@ Si deseas contribuir a este proyecto, por favor sigue las siguientes instruccion
 
 Este proyecto está bajo la Licencia Apache 2.0. Para más detalles, consulta el archivo [LICENSE](LICENSE).
 
-## Contacto y blame
+## Contacto
 
 Sebastian P. Pincheira - [sebastian.pincheira@ug.uchile.cl](mailto:sebastian.pincheira@ug.uchile.cl)
 
