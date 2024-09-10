@@ -206,6 +206,7 @@ structural_inpainting(
 	dilatacion::Int=0
     difussion::Float64=0.05
     dt_ani::Float64=1 / 20
+    anim_duration:: Float64 = 10.0
 	) :: Array{Float64 ,2}
 
 Función que recibe el path a una imagen y el path a un mask, en la forma de una inágen con la misma
@@ -231,10 +232,12 @@ todo el resto debe estar en negro.
 - `dilatacion::Int`: dilatación del mask (default: 0) 
 - `difussion::Float64` La constante de difusión K de la difusión anisotrópica. Mientras más cercana a 0,
 menor difusión (defauls: 0.05)
-- `dt_adni::Float64` El paso en el tiempo de la difusión anisotrópica.
+- `dt_adni::Float64`: El paso en el tiempo de la difusión anisotrópica.
+- `anim_duration::Float64`: la duración de la animación de inpainting
 
 # Returns
 - `Array{Float64, 2}`: array con la luminocidad de cada pixel.
+- `Array{Array{Float64, 2},1}`: lista de frames para un video del proceso
 """
 function structural_inpainting(
     img::Array{Float64,2},
@@ -248,7 +251,8 @@ function structural_inpainting(
     dilatacion::Int=1,
     difussion::Float64=0.05,
     dt_ani::Float64=1 / 20,
-)::Array{Float64,2}
+    anim_duration:: Float64 = 10.0
+)::Tuple{Array{Float64,2}, Array{Array{Float64,2},1}}
     if max_iters < 1
         throw(ArgumentError("max_iters debe ser mayor que 1"))
     end
@@ -284,10 +288,14 @@ function structural_inpainting(
     # Inicializamos las image functions
     In = copy(I_0)
 
-    # Iteramos sobre los tiempos, alternamos ente inpainting y anisotrópica (acorde a A y B)
+    frames = [In]
+
+    # Iteramos sobre los tiempos, alternamos entre inpainting y anisotrópica (acorde a A y B)
     println()
     println("Starting inpainting process...")
     inpainting_progress = Progress(max_iters, 1, "Inaptinting")
+
+    storing_ratio = floor(max_iters / (anim_duration * 24))
     for n in 1:max_iters
         if n % (A + B) < A
             In = inpaint_iteration(In, Omega, dt, eps)
@@ -295,10 +303,14 @@ function structural_inpainting(
             In = anisotropic_iteration(In; K=difussion, dt=dt_ani)
         end
 
+        if n % storing_ratio == 0
+            push!(frames, copy(In))
+        end
+
         next!(inpainting_progress)
     end
     I_R = In
-    return I_R
+    return I_R, frames
 end
 
 end

@@ -10,6 +10,7 @@ import numpy as np  # numpy
 import julia  # Para importar funciones de Julia
 from julia import Main  # Para importar funciones de Julia
 from pathlib import Path  # Para trabajar con rutas de archivos
+import os
 
 try:  # Importamos la librería para crear barras de carga
     from tqdm import tqdm
@@ -23,6 +24,8 @@ print("tqdm disponible:", tqdm_is_available)
 # Definimos paths importantes:
 # Carpeta principal del directorio
 main_dir = Path(__file__).resolve().parent
+# Carpeta de movies
+movies_dir = main_dir / "Movies"
 # Carpeta de imágenes
 img_dir_path = main_dir / "Images"
 # Carpeta de máscaras
@@ -51,7 +54,39 @@ structure = Main.inpainting_structure
 texture = Main.inpainting_texture
 
 
-def inpaint(img_path: Path) -> np.array:
+def list_of_frames_to_folder(frames: list[np.array], folder_path: Path) -> None:
+    """
+    Función que guarda una lista de frames en una carpeta.
+
+    Args:
+        frames (list[np.array]): Lista de frames.
+        folder_path (Path): Ruta de la carpeta donde guardar los frames.
+
+    Returns:
+        None
+    """
+    os.makedirs(folder_path, exist_ok=True)
+
+    # Get the number of digits for padding
+    num_frames = len(frames)
+    num_digits = len(str(num_frames))
+
+    for i, frame in enumerate(frames):
+        # Ensure frame is in uint8 format
+        frame_uint8 = (
+            (frame * 255).astype(np.uint8)
+            if frame.max() <= 1
+            else frame.astype(np.uint8)
+        )
+
+        # Format filename with leading zeros
+        filename = f"frame_{i+1:0{num_digits}}.png"
+
+        # Save the image
+        cv2.imwrite(os.path.join(folder_path, filename), frame_uint8)
+
+
+def inpaint(img_path: Path, anim_duration: float = 10.0) -> np.array:
     """
     Función que realiza el inpainting de una imagen.
     Entrega un np.array con la imagen restaurada y, además,
@@ -60,6 +95,8 @@ def inpaint(img_path: Path) -> np.array:
 
     Args:
         img_path (Path): Ruta de la imagen a restaurar.
+        anim_duration (float): Duración de la animación.
+
 
     Returns:
         np.array: Imagen restaurada.
@@ -73,10 +110,16 @@ def inpaint(img_path: Path) -> np.array:
     K = 0.06
     difussion = K
     dt_ani = 1 / 45
-    struct, text = ST_decomposition(img, K=K, dt=dt_ani, max_iters=3500)
+    struct, text, anisotropic_frames = ST_decomposition(
+        img, K=K, dt=dt_ani, anim_duration=anim_duration, max_iters=2000
+    )
     text = text + 0.5
 
-    cv2.imwrite(str(img_dir_path / f"{img_path.stem}_danada_estructura.jpg"), struct * 255.0)
+    list_of_frames_to_folder(anisotropic_frames, movies_dir / "anisotropic_frames")
+
+    cv2.imwrite(
+        str(img_dir_path / f"{img_path.stem}_danada_estructura.jpg"), struct * 255.0
+    )
     cv2.imwrite(str(img_dir_path / f"{img_path.stem}_danada_textura.jpg"), text * 255.0)
 
     # Transformamos el mask en formato blanco y negro
@@ -89,26 +132,38 @@ def inpaint(img_path: Path) -> np.array:
         "G": g_channel_struct,
         "B": b_channel_struct,
     }
+
+    structural_frames_dict: dict[str, list[np.array]] = {
+        color: None for color in channels_struct
+    }
     # Inpainting de cada canal
     for color in channels_struct:
         print()
         print(f"Realizando inpainting de estructura para el color {color}")
-        channels_struct[color] = structure.structural_inpainting(
+        channels_struct[color], frames = structure.structural_inpainting(
             channels_struct[color],
             mask,
-            max_iters=30000,
             anisotropic_iters=1,
             dt=0.545,
             dilatacion=1,
             difussion=K,
             dt_ani=dt_ani,
+            max_iters=30000,
         )
+
+        structural_frames_dict[color] = frames
+
+    structural_frames = [cv2.merge([structural_frames_dict["B"][i], structural_frames_dict["G"][i], structural_frames_dict["R"][i]]) for i in range(len(structural_frames_dict["R"]))]
+
+    list_of_frames_to_folder(structural_frames, movies_dir / "structural_frames")
 
     struct = cv2.merge(
         (channels_struct["B"], channels_struct["G"], channels_struct["R"])
     )
 
-    cv2.imwrite(str(img_dir_path / f"{img_path.stem}_restaurada_estructura.jpg"), struct * 255.0)
+    cv2.imwrite(
+        str(img_dir_path / f"{img_path.stem}_restaurada_estructura.jpg"), struct * 255.0
+    )
 
     # Separamos la imágen en sus canales RGB
     b_channel_text, g_channel_text, r_channel_text = cv2.split(text)
@@ -128,7 +183,9 @@ def inpaint(img_path: Path) -> np.array:
 
     text = cv2.merge((channels_text["B"], channels_text["G"], channels_text["R"]))
 
-    cv2.imwrite(str(img_dir_path / f"{img_path.stem}_restaurada_textura.jpg"), text * 255.0)
+    cv2.imwrite(
+        str(img_dir_path / f"{img_path.stem}_restaurada_textura.jpg"), text * 255.0
+    )
 
     cv2.imshow("Structure", struct)
     cv2.imshow("Texture", text)
@@ -136,7 +193,9 @@ def inpaint(img_path: Path) -> np.array:
     restaurada = struct + text
     cv2.imshow("Restaurada", restaurada)
 
-    cv2.imwrite(str(img_dir_path / f"{img_path.stem}_restaurada.jpg"), restaurada * 255.0)
+    cv2.imwrite(
+        str(img_dir_path / f"{img_path.stem}_restaurada.jpg"), restaurada * 255.0
+    )
 
     esc = False
     while not esc:

@@ -36,19 +36,29 @@ structure = Main.inpainting_structure
 
 
 def ST_decomposition(
-    img: np.ndarray, K: float = 0.04, dt: float = 1 / 45, max_iters: int = 2000
-) -> tuple[np.ndarray, np.ndarray]:
+    img: np.ndarray,
+    K: float = 0.04,
+    dt: float = 1 / 45,
+    max_iters: int = 2000,
+    anim_duration: float = 10.0,
+) -> tuple[np.ndarray, np.ndarray, list[np.ndarray]]:
     """
     Función que realiza la descomposición de una imagen en estructura y textura.
     Se basa en la obtención de la estructura mediante difusión Perona-Malik.
 
     Args:
         img (np.ndarray): Imagen a descomponer.
+        K (float, optional): Coeficiente de difusión. Defaults to 0.04.
+        dt (float, optional): Paso de tiempo. Defaults to 1/45.
         max_iters (int, optional): Número de iteraciones. Defaults to 300.
-        dt (float, optional): Paso de tiempo. Defaults to 1/20.
+        anim_duration (float, optional): Duración de la animación. Defaults to 10.0.
+
 
     Returns:
-        tuple[np.ndarray, np.ndarray]: Retorna la imagen de estructura y textura.
+        np.ndarray: Estructura de la imagen.
+        np.ndarray: Textura de la imagen.
+        list[np.ndarray]: Lista de frames de la animación.
+
 
     Asserts:
         isinstance(img, np.ndarray): Se asegura que la imagen sea un np.ndarray.
@@ -66,20 +76,41 @@ def ST_decomposition(
 
     structure_result = {"R": None, "G": None, "B": None}
     texture_result = {"R": None, "G": None, "B": None}
+
+    anisotropic_frames_np: dict[str, list[np.ndarray]] = {
+        color: [channels[color]] for color in channels
+    }
+
+    storing_ratio = max_iters // (anim_duration * 24)
     for channel in channels:
         f = channels[channel] / 255.0
         u = f.copy()
         for n in tqdm(range(max_iters), desc=f"Decomposing {channel} channel"):
             u = structure.anisotropic_iteration(u, K=K, dt=dt)
+
+            if n % storing_ratio == 0:
+                anisotropic_frames_np[channel].append(u.copy())
+
         structure_result[channel] = u
         texture_result[channel] = f - u
+
+    Frames = [
+        cv2.merge(
+            [
+                anisotropic_frames_np["B"][i],
+                anisotropic_frames_np["G"][i],
+                anisotropic_frames_np["R"][i],
+            ]
+        )
+        for i in range(len(anisotropic_frames_np["R"]))
+    ]
 
     Estructura = cv2.merge(
         [structure_result["B"], structure_result["G"], structure_result["R"]]
     )
     Textura = cv2.merge([texture_result["B"], texture_result["G"], texture_result["R"]])
 
-    return Estructura, Textura
+    return Estructura, Textura, Frames
 
 
 if __name__ == "__main__":
@@ -89,7 +120,7 @@ if __name__ == "__main__":
     img = cv2.imread(img_path)
 
     # Realizamos la descomposición de la imagen
-    u, v = ST_decomposition(img)
+    u, v, frames = ST_decomposition(img)
 
     cv2.imwrite(str(restored_dir_path / "New_lena_estructura.jpg"), u * 255.0)
     cv2.imwrite(str(restored_dir_path / "New_lena_textura.jpg"), (v + 0.5) * 255.0)
