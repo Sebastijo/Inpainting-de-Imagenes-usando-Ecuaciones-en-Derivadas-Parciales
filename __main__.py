@@ -153,7 +153,16 @@ def inpaint(img_path: Path, anim_duration: float = 10.0) -> np.array:
 
         structural_frames_dict[color] = frames
 
-    structural_frames = [cv2.merge([structural_frames_dict["B"][i], structural_frames_dict["G"][i], structural_frames_dict["R"][i]]) for i in range(len(structural_frames_dict["R"]))]
+    structural_frames = [
+        cv2.merge(
+            [
+                structural_frames_dict["B"][i],
+                structural_frames_dict["G"][i],
+                structural_frames_dict["R"][i],
+            ]
+        )
+        for i in range(len(structural_frames_dict["R"]))
+    ]
 
     list_of_frames_to_folder(structural_frames, movies_dir / "structural_frames")
 
@@ -171,7 +180,7 @@ def inpaint(img_path: Path, anim_duration: float = 10.0) -> np.array:
 
     print()
     print(f"Realizando inpainting de textura")
-    channels_text["R"], channels_text["G"], channels_text["B"] = (
+    channels_text["R"], channels_text["G"], channels_text["B"], texture_frames = (
         texture.texture_inpainting(
             channels_text["R"],
             channels_text["G"],
@@ -180,6 +189,8 @@ def inpaint(img_path: Path, anim_duration: float = 10.0) -> np.array:
             block_size0=8,
         )
     )
+
+    list_of_frames_to_folder(texture_frames, movies_dir / "texture_frames")
 
     text = cv2.merge((channels_text["B"], channels_text["G"], channels_text["R"]))
 

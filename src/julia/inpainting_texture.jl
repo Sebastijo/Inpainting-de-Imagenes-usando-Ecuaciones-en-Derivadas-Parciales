@@ -35,7 +35,10 @@ la zona de solape dependiente a este desplazamiento en caso de ocurrir.
 - `block_size0::Int64`: tamaño de los bloques a usar (default: 1/6 de la imagen).
 
 # Returns
-- `Array{Float64, 2}`: imagen restaurada.
+- `Array{Float64, 2}`: imagen restaurada (canal R).
+- `Array{Float64, 2}`: imagen restaurada (canal G).
+- `Array{Float64, 2}`: imagen restaurada (canal B).
+- `Array{Array{Float64, 3}, 1}`: lista de frames para animación.
 """
 function texture_inpainting(
 	IR::Array{Float64, 2},
@@ -43,15 +46,17 @@ function texture_inpainting(
 	IB::Array{Float64, 2},
 	Omega0::Array{Float64, 2};
 	block_size0::Int = Int64(floor(size(IR, 1) / 6)),
-)::Tuple{Array{Float64, 2}, Array{Float64, 2}, Array{Float64, 2}}
+	anim_duration:: Float64 = 10.0,
+)::Tuple{Array{Float64, 2}, Array{Float64, 2}, Array{Float64, 2}, Array{Array{Float64, 3}, 1}}
 
 	candidates = Dict{Float64, Tuple{Int32, Int32}}()
 	global I = [IR, IG, IB]
-	I_orginal = [copy(IR), copy(IG), copy(IB)] # no cambia
+	I_original = [copy(IR), copy(IG), copy(IB)] # no cambia
 	global I_orig = [copy(IR), copy(IG), copy(IB)] # Es para reparar los bloques a la derecha y abajo del hoyo
 	global Omega = Omega0 .> 0.5
 	missing_pixels::Int = sum(Omega)
 	number_of_blocks_needed::Int = div(missing_pixels + 1, block_size0^2)
+	storing_ratio = max(floor(number_of_blocks_needed / (anim_duration * 24)), 1)
 	if size(Omega) != size(I[1])
 		throw(ArgumentError(
 			"Omega e img deben tener la misma cantidad de pixeles.",
@@ -93,9 +98,11 @@ function texture_inpainting(
 		return i, j
 	end
 
-	frames_dict::Dict{Str, Array{Array{Float64, 2}, 1}} = {"R":[I_original["R"]], "G":[I_original["G"]], "B":[I_original["B"]]}
+	frames_dict_fake::Dict{String, Array{Array{Float64, 2}, 1}} = Dict("R" => [I_original[1]], "G" => [I_original[2]], "B" => [I_original[3]])
 
+	idx = 0
 	for (i_block, j_block) in Iterators.product(1:n_rows, 1:n_cols)
+		
 		if (i_block, j_block) == (1, 1) # El primero no se puede reparar
 			continue
 		end
@@ -103,7 +110,13 @@ function texture_inpainting(
 
 		#Si el bloque contiene parte de omega, lo trabajamos
 		if any(Omega[i:i+block_size-1, j:j+block_size-1])
+			idx += 1
 			synthesize_block(i, j)
+			if idx % storing_ratio == 0
+				frames_dict_fake["R"] = push!(frames_dict_fake["R"], copy(I[1]))
+				frames_dict_fake["G"] = push!(frames_dict_fake["G"], copy(I[2]))
+				frames_dict_fake["B"] = push!(frames_dict_fake["B"], copy(I[3]))
+			end
 		else
 			if i_block != 1
 				i_prev_block = block_to_coor(i_block - 1, j_block)[1]
@@ -121,10 +134,23 @@ function texture_inpainting(
 			end
 
 		end
-		frames_dict["R"] = push!(frames_dict["R"], copy(I[1]))
-		frames_dict["G"] = push!(frames_dict["G"], copy(I[2]))
-		frames_dict["B"] = push!(frames_dict["B"], copy(I[3]))
+		
 	end
+
+
+	max_iters = length(frames_dict_fake["R"])
+	storing_ratio = floor(max(floor(max_iters / (anim_duration * 24)), 1))
+	frame_dict:: Dict{String, Array{Array{Float64, 2}, 1}} = Dict("R" => [], "G" => [], "B" => [])
+	for color in keys(frames_dict_fake)
+		for i in 1:storing_ratio:max_iters
+			i = Int(i)
+			push!(frame_dict[color], frames_dict_fake[color][i])
+		end
+		push!(frame_dict[color], frames_dict_fake[color][end])
+	end
+
+	frames:: Array{Array{Float64,3}, 1} = [cat(frame_dict["B"][i], frame_dict["G"][i], frame_dict["R"][i], dims = 3) for i in 1:length(frame_dict["R"])]
+
 	# si el primer bloque está dañado, invertimos la imagen y corremos el
 	# algoritmo nuevamente considerando sólo el primer bloque de Omega
 	if any(Omega[1:block_size, 1:block_size])
@@ -136,7 +162,7 @@ function texture_inpainting(
 		new_IR, new_IG, new_IB = Tuple(reverse(channel, dims = 1) for channel in new_I)
 		return Tuple(reverse(channel, dims = 1) for channel in texture_inpainting(new_IR, new_IG, new_IB, new_Omega; block_size0))
 	end
-	return I[1], I[2], I[3]
+	return I[1], I[2], I[3], frames
 end
 
 """
@@ -156,6 +182,7 @@ function cut_up(i, j)
 		I[k][i:i+block_size-1, j:j+block_size-1] = I[k][i:i+block_size-1, j:j+block_size-1] .+ cutted_block[k]
 	end
 end
+
 """
 Le realiza el corte de error mínimo al bloque por la izq, sin cambiar el bloque.
 """
