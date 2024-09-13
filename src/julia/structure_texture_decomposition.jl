@@ -1,3 +1,10 @@
+"""
+Is module is obsolete and will be removed in the future.
+"""
+
+
+
+
 module structure_texture_decomposition
 
 export ST_decomposition
