@@ -232,7 +232,7 @@ todo el resto debe estar en negro.
 - `dilatacion::Int`: dilatación del mask (default: 0) 
 - `difussion::Float64` La constante de difusión K de la difusión anisotrópica. Mientras más cercana a 0,
 menor difusión (defauls: 0.05)
-- `dt_adni::Float64`: El paso en el tiempo de la difusión anisotrópica.
+- `dt_ani::Float64`: El paso en el tiempo de la difusión anisotrópica.
 - `anim_duration::Float64`: la duración de la animación de inpainting
 
 # Returns

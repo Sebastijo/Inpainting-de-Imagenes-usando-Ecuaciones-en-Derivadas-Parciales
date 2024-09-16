@@ -12,10 +12,15 @@ using ProgressMeter
 
 """
 texture_inpainting(
-I0::Array{Float64, 2};
+IR::Array{Float64, 2},
+IG::Array{Float64, 2},
+IB::Array{Float64, 2},
 Omega0::Array{Float64, 2},
-block_size0::Int64 = 0,
-)::Array{Float64, 2}
+block_size0::Int64,
+anim_duration:: Float64,
+overlap_size0::Int,
+acceptable_error::Float64,
+)::Tuple{Array{Float64, 2}, Array{Float64, 2}, Array{Float64, 2}, Array{Array{Float64, 3}, 1}}
 
 Función principal del programa. Recibe una imagen en forma de array y
 aplica inpainting por sintésis de textura, basándose en el siguiente artículo:
@@ -30,23 +35,25 @@ Si el bloque se sale, es desplazado para quedar dentro de la imagen, siendo
 la zona de solape dependiente a este desplazamiento en caso de ocurrir.
 
 # Arguments
-- `I0::Array{Float64, 2}`: imagen en forma de array.
-- `Omega0::Array{Float64, 2}`: máscara de pixeles a preservar.
-- `block_size0::Int64`: tamaño de los bloques a usar (default: 1/6 de la imagen).
-
-# Returns
-- `Array{Float64, 2}`: imagen restaurada (canal R).
-- `Array{Float64, 2}`: imagen restaurada (canal G).
-- `Array{Float64, 2}`: imagen restaurada (canal B).
-- `Array{Array{Float64, 3}, 1}`: lista de frames para animación.
+- `IR::Array{Float64, 2}`: imagen en escala de grises.
+- `IG::Array{Float64, 2}`: imagen en escala de grises.
+- `IB::Array{Float64, 2}`: imagen en escala de grises.
+- `Omega0::Array{Float64, 2}`: máscara de la imagen, donde 1 indica que el pixel
+	está dañado y 0 que está sano.
+- `block_size0::Int64`: tamaño de los bloques a utilizar.
+- `anim_duration:: Float64`: duración de la animación.
+- `overlap_size0::Int`: tamaño de la solapa.
+- `acceptable_error::Float64`: error porcentual con respecto al mejor candidato aceptable para seleccionar un bloque.
 """
 function texture_inpainting(
 	IR::Array{Float64, 2},
 	IG::Array{Float64, 2},
 	IB::Array{Float64, 2},
 	Omega0::Array{Float64, 2};
-	block_size0::Int = Int64(floor(size(IR, 1) / 6)),
+	block_size0::Int64 = Int64(floor(size(IR, 1) / 6)),
 	anim_duration:: Float64 = 10.0,
+	overlap_size0::Int = div(block_size0, 2), # div(block_size0, 3) was the original value
+	acceptable_error0::Float64 = 1.1
 )::Tuple{Array{Float64, 2}, Array{Float64, 2}, Array{Float64, 2}, Array{Array{Float64, 3}, 1}}
 
 	candidates = Dict{Float64, Tuple{Int32, Int32}}()
@@ -65,7 +72,7 @@ function texture_inpainting(
 
 	# Establecemos los valores de la imagen que estén en el Omega como 0.5
 	for canal in I
-		canal[Omega] .= 0
+		canal[Omega] .= 1
 	end
 
 
@@ -74,7 +81,8 @@ function texture_inpainting(
 	end
 
 	global block_size = block_size0
-	global overlap_size = div(block_size, 3)
+	global overlap_size = overlap_size0
+	global acceptable_error = acceptable_error0
 
 
 	upper, left = false, false
@@ -98,20 +106,28 @@ function texture_inpainting(
 		return i, j
 	end
 
-	frames_dict_fake::Dict{String, Array{Array{Float64, 2}, 1}} = Dict("R" => [I_original[1]], "G" => [I_original[2]], "B" => [I_original[3]])
+	frames_dict_fake::Dict{String, Array{Array{Float64, 2}, 1}} = Dict("R" => [], "G" => [], "B" => [])
 
 	idx = 0
+	println()
+    println("Starting inpainting process...")
+	inpainting_progress = Progress(n_rows * n_cols, 1, "Inpainting")
 	for (i_block, j_block) in Iterators.product(1:n_rows, 1:n_cols)
-		
+
 		if (i_block, j_block) == (1, 1) # El primero no se puede reparar
 			continue
+
+			next!(inpainting_progress)
 		end
+
 		i, j = block_to_coor(i_block, j_block)
 
 		#Si el bloque contiene parte de omega, lo trabajamos
 		if any(Omega[i:i+block_size-1, j:j+block_size-1])
 			idx += 1
+
 			synthesize_block(i, j)
+
 			if idx % storing_ratio == 0
 				frames_dict_fake["R"] = push!(frames_dict_fake["R"], copy(I[1]))
 				frames_dict_fake["G"] = push!(frames_dict_fake["G"], copy(I[2]))
@@ -134,7 +150,9 @@ function texture_inpainting(
 			end
 
 		end
-		
+
+		next!(inpainting_progress)
+
 	end
 
 
@@ -390,7 +408,7 @@ function search_block(left_block, upper_block)
 	# Escogemos los candidatos con error dentro de un 0.1 veces el error del mejor candidato
 	# (recomendación del paper)
 	min_error = minimum(keys(candidates))
-	margin = 1.1 * min_error
+	margin = acceptable_error * min_error
 	best_candidates = [candidates[key] for key in filter(n -> n <= margin, keys(candidates))]
 	i, j = rand(best_candidates)
 	new_block = [channel[i:i+block_size-1, j:j+block_size-1] for channel in I]

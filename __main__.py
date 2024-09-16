@@ -144,7 +144,7 @@ def inpaint(img_path: Path, anim_duration: float = 10.0) -> np.array:
             channels_struct[color],
             mask,
             anisotropic_iters=1,
-            dt=0.545,
+            dt=0.3, #0.545 seems alright
             dilatacion=1,
             difussion=K,
             dt_ani=dt_ani,
@@ -186,7 +186,8 @@ def inpaint(img_path: Path, anim_duration: float = 10.0) -> np.array:
             channels_text["G"],
             channels_text["B"],
             mask,
-            block_size0=8,
+            block_size0=8, # 8 seems good enough
+            acceptable_error0=1.1 # suggeste by paper
         )
     )
 
