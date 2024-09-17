@@ -219,4 +219,5 @@ def inpaint(img_path: Path, anim_duration: float = 10.0) -> np.array:
 
 
 example_img = img_dir_path / "barbara.jpg"
-inpaint(example_img)
+print(example_img)
+# inpaint(example_img)
