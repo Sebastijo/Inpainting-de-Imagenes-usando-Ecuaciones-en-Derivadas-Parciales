@@ -1,4 +1,4 @@
-# **Instrucciones Para el la Animación del Proceso**
+# **Instrucciones Para la Animación del Proceso**
 
 El proceso comienza con una imagen dañada: `barbara_danhada.png`. El video debería comenzar con esta imágen.
 Luego, esta imágen se descompone en *estructura* y *textura*. Los frames de este proceso se encuentran en las ccarpetas
