@@ -1,6 +1,14 @@
 # Inpainting de Imágenes
 
-![Ecce Homo/Mono](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/cbc0347c-de99-46e5-bbfb-18ba5ad2d922)
+<!-- ![Ecce Homo/Mono](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/cbc0347c-de99-46e5-bbfb-18ba5ad2d922) -->
+
+
+https://github.com/user-attachments/assets/55c0838d-db84-4331-acba-8bb8d5716bde
+
+
+
+
+
 
 
 ## Nuestro Objetivo
