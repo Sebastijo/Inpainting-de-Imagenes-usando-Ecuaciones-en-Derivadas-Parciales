@@ -170,11 +170,12 @@ $$G(I) = S(D(I)) + T(I-D(I))$$
 
 #### Resultados
 
-![total_inpainting](https://github.com/user-attachments/assets/840535f7-b5a6-4551-a6ab-101f2f6a4c22)
-![total_texture_inpainting](https://github.com/user-attachments/assets/f901f0e4-259a-454b-856e-e63110b22c59)
-![total_structure_inpainting](https://github.com/user-attachments/assets/c986d4bc-50c4-4c58-97f5-974d4ff254fc)
-![main_dañada_restaurada](https://github.com/user-attachments/assets/80fff28d-5c51-430c-a51e-b2ecab9d974b)
-![main_original_restaurada](https://github.com/user-attachments/assets/d8d26847-2980-4b0d-98f8-419b4510afe2)
+![total_inpainting](https://github.com/user-attachments/assets/4091fa4c-febc-407d-b651-daa3b4e3695d)
+![total_texture_inpainting](https://github.com/user-attachments/assets/14ccd256-a04d-45e4-8a99-ee359509644b)
+![total_structure_inpainting](https://github.com/user-attachments/assets/5f50a368-934e-469c-8fb9-f0c0ead5e89b)
+![main_dañada_restaurada](https://github.com/user-attachments/assets/fc0b98fc-cfce-4aa4-b790-c04811b64b60)
+![main_original_restaurada](https://github.com/user-attachments/assets/393af4c0-f373-4ea8-b442-e22f479a7e94)
+
 
 #### Comentarios
 
