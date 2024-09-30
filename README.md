@@ -13,14 +13,14 @@ https://github.com/user-attachments/assets/55c0838d-db84-4331-acba-8bb8d5716bde
 
 ## Nuestro Objetivo
 
-Nuestro objetivo es crear un proyecto que permita realizar inpainting de imagenes con herramientas de Análisis Numérico de Ecuaciones en Derivadas Parciales. Para esto, nos basaremos en [6]. El inpainting consiste en reconstruir partes 
-faltantes de imagenes a partir de la información sí disponible de la imagen. Nuestro *approach* será dividir la imagen en dos imágenes, una conteniendo la textura y otra conteniendo la estructura, y luego
-completar las imagenes por separado. Para completar las imagenes, en el caso de la estructura, se modela como un problema de Dirichlet en la parte faltante de la imagen, para la textura, se aplica un de
+Nuestro objetivo es crear un proyecto que permita realizar inpainting de imágenes con herramientas de Análisis Numérico de Ecuaciones en Derivadas Parciales. Para esto, nos basaremos en [6]. El inpainting consiste en reconstruir partes 
+faltantes de imágenes a partir de la información sí disponible de la imagen. Nuestro *approach* será dividir la imagen en dos imágenes, una conteniendo la textura y otra conteniendo la estructura, y luego
+completar las imágenes por separado. Para completar las imágenes, en el caso de la estructura, se modela como un problema de Dirichlet en la parte faltante de la imagen, para la textura, se aplica un de
 síntesis de texturas. Para la separación se utiliza difusión Perona-Malik (*a.k.a.* anisotrópica).
 
 ## Lo Que Hemos Implementado
 
-Hemos logrado implementar un porgrama que recibe una imagen a color (RGB) y permite seleccionar la zona a restaurar. Separando la imagen en cada uno de sus canales RGB y cada uno de esto canales en textura y estructura, se logra restaurar cada una de las 6 imágenes resultantes para luego combinarlas en una sola imagen restaurada.
+Hemos logrado implementar un programa que recibe una imagen a color (RGB) y permite seleccionar la zona a restaurar. Separando la imagen en cada uno de sus canales RGB y cada uno de estos canales en textura y estructura, se logra restaurar cada una de las 6 imágenes resultantes para luego combinarlas en una sola imagen restaurada.
 
 ## Cómo Funciona
 
@@ -55,11 +55,11 @@ y el siguiente resultado para $K = 0.1$
 ![bungee2](https://github.com/user-attachments/assets/1bbe72e1-3c80-4d20-ab4a-a01d3b59d294)
 
 #### Comentario Sobre Los Resultados
-Los resultados son buenos. Se logra eliminar los detalles de la imagen y es posible cuantificar esto mediante un cambio en la constante $K$ de difusión. Es posbile alcanzar una imagen tipo *cartoon*.
+Los resultados son buenos. Se logra eliminar los detalles de la imagen y es posible cuantificar esto mediante un cambio en la constante $K$ de difusión. Es posible alcanzar una imagen tipo *cartoon*.
 
 ### Separación Estructura-Textura
 
-Para el método a implementar, es necesario separar la textura y la estructura. Para esto, utilizamos la difusión Perona-Malik para obtener una imagen *cartoon* (que corresponde a la estructura) y luego, restandole esta esta imagen a la imagen original, rescatamos la textura. Con esto se cumple la propiedad $f = u + v$ donde $f$ es la imagen original y $u$, $v$ la estructura y textura respectivamente.
+Para el método a implementar, es necesario separar la textura y la estructura. Para esto, utilizamos la difusión Perona-Malik para obtener una imagen *cartoon* (que corresponde a la estructura) y luego, restando esta esta imagen a la imagen original, rescatamos la textura. Con esto se cumple la propiedad $f = u + v$ donde $f$ es la imagen original y $u$, $v$ la estructura y textura respectivamente.
 
 #### Resultados de Separación Textura-Estructura
 
@@ -79,7 +79,7 @@ Realizando Perona-Malik con $3000$ iteraciones (*cf.* [1]) y $K=0.05$, se obtien
 
 ### Inpainting de estructura
 
-Primero, con el objetivo de reducir el ruido de la imagen, se realiza un pre-procesamiento de la imagen resolviendo la ecuación de difusión anisotrópica [1,2]
+Primero, con el objetivo de reducir el ruido de la imagen, se realiza un preprocesamiento de la imagen resolviendo la ecuación de difusión anisotrópica [1,2]
 
 Luego se realiza el inpainting estructural, que se realiza mediante la solución de la ecuación [2]
 
@@ -93,7 +93,7 @@ considerable al proceso). Las iteraciones estándar que utilizamos son de 2 iter
 
 #### Resultados
 
-Acá un ejemplo de lo que se logró con 10000 iteraciones de inpainting estructural (mezclado con difusión anisotrópica en proporción 2:15) y 3000 iteraciones de difusión anisotrópica como pre-procesamiento.
+Acá un ejemplo de lo que se logró con 10000 iteraciones de inpainting estructural (mezclado con difusión anisotrópica en proporción 2:15) y 3000 iteraciones de difusión anisotrópica como preprocesamiento.
 Esto se realizó para cada uno de los 3 canales de RGB con lo que la cantidad de iteraciones se triplica. El proceso total tomó alrededor de 10 minutos en un Lenovo IdeaPad3 16GB RAM, Ryzen 7, implementando las partes de alto costo computacional en Julia.
 
 La imagen original que utilizamos es:
@@ -115,15 +115,15 @@ con lo que el problema es la difusión anisotrópica; esto no es un problema una
 
 ### Inpainting Texturado
 
-Esta es la únia herramienta del proyecto que no se basa en EDP. Se define una textura como un patron infinito en 2 dimensiones. Un ejemplo de patrón, es una mesa infinita cubierta completamente de manzanas, incluso la misma superficie de la mesa, por si sola, sería una textura. Para iniciar, planteamos la solución presentada en [5], una mejora de la presentada en [7], para el problema de sintesis de textura. 
+Esta es la única herramienta del proyecto que no se basa en EDP. Se define una textura como un patrón infinito en 2 dimensiones. Un ejemplo de patrón, es una mesa infinita cubierta completamente de manzanas, incluso la misma superficie de la mesa, por si sola, sería una textura. Para iniciar, planteamos la solución presentada en [5], una mejora de la presentada en [7], para el problema de síntesis de textura. 
 
 #### *Image Quilting*
 
-El problema de síntesis de textura consiste en, a partir de una muestra de una textura (un parche de textura finito), lograr recontruir lo textura original. La solución propuesta en [5] tiene el nomrbe de *Image Quilting*.
+El problema de síntesis de textura consiste en, a partir de una muestra de una textura (un parche de textura finito), lograr reconstruir la textura original. La solución propuesta en [5] tiene el nombre de *Image Quilting*.
 
-El *Image Quilting* consiste en dividir la muestra inicial en bloques de $n\times n$ pixeles y elegir uno al azar como punto de partida. Luego, en orden *raster scan*, se van agregando nuevos bloques de la muestra inicial hasta generar tanta textura como se desea. Un nuevo bloque agregado, queda superpuesto con el bloque de su izquierda y con el de arriba en los bordes (a continuación se mencona porque). La forma de elegir los bloques de textura que se agregan y la forma de agregarlos, queda resumida a continuación:
+El *Image Quilting* consiste en dividir la muestra inicial en bloques de $n\times n$ pixeles y elegir uno al azar como punto de partida. Luego, en orden *raster scan*, se van agregando nuevos bloques de la muestra inicial hasta generar tanta textura como se desea. Un nuevo bloque agregado, queda superpuesto con el bloque de su izquierda y con el de arriba en los bordes (a continuación se menciona porque). La forma de elegir los bloques de textura que se agregan y la forma de agregarlos, queda resumida a continuación:
 1. Se recorre la muestra y se guardan todos los bloques de la muestra que tengan un error (más sobre esto adelante) bajo $\varepsilon$ en los bordes que se sobreponen con el bloque de la izquierda y el de arriba.
-2. De los bloques guardados en el paso anterior, se elije uno al azar y se agrega tal que los bordes queden superpuestos con el bloque de la izquierda y con el de arriba.
+2. De los bloques guardados en el paso anterior, se elige uno al azar y se agrega tal que los bordes queden superpuestos con el bloque de la izquierda y con el de arriba.
 3. Se genera un corte de error mínimo (más sobre esto a continuación) a lo largo de la intersección de los bloques.
 La siguiente imagen sacada del paper original [5] resume este proceso (en la imagen (a) se muestra que pasa si simplemente elegimos bloques al azar, en la imagen (b), que pasa si elegimos los bloques como se muestra en el paso 1. y 2. de la lista anterior, en la imagen (c) se muestra el resultado de incorporar, además, el paso 3. de la lista anterior).
 
@@ -163,7 +163,7 @@ En la imagen en blanco y negro, se logra una reconstrucción de bastante alta ca
 
 ### Inpainting texturado y estructurado
 
-Con estas, herramientas, podemos ahora separar una imágen en textura y estructura, aplicar inpainting texturado a la textura, aplicar inpainting estructurado a la estructura y luego unir nuevamente las imágens.
+Con estas herramientas, podemos ahora separar una imágen en textura y estructura, aplicar inpainting texturado a la textura, aplicar inpainting estructurado a la estructura y luego unir nuevamente las imágenes.
 
 Si $D$ es un operador que aplica difusión anisotrópica, $S$ un operador que aplica inpainting estructural sobre $\Omega$, $T$ un operador que aplica inpainting texturado sobre $\Omega$ e $I$ una imágen a la que queremos aplicar inpainting, entonces el inpainting texturado y estructurado $G$ se escribe como
 $$G(I) = S(D(I)) + T(I-D(I))$$
@@ -179,7 +179,7 @@ $$G(I) = S(D(I)) + T(I-D(I))$$
 
 #### Comentarios
 
-Se logra un inpainting bastante bueno, pero aún se logra ver levemente el lugar donde se realizó la restauración. El método es bastante sensible a los parámetros lo que dificulta elegirlos de manera óptima. El tiempo de computo, teniendo en consideración lo que se quiere realizar, es razonable, pero es suficientemente alto como para dificultar el descubrimiento de los buenos parámetros mediante prueba y error. A continuación algunos inpainting no-logrados debido a la perdida de estabilidad de los métodos numéricos.
+Se logra un inpainting bastante bueno, pero aún se logra ver levemente el lugar donde se realizó la restauración. El método es bastante sensible a los parámetros lo que dificulta elegirlos de manera óptima. El tiempo de cómputo, teniendo en consideración lo que se quiere realizar, es razonable, pero es suficientemente alto como para dificultar el descubrimiento de los buenos parámetros mediante prueba y error. A continuación algunos inpainting no-logrados debido a la pérdida de estabilidad de los métodos numéricos.
 
 ![main_error](https://github.com/user-attachments/assets/2f04ca9d-22c1-4b67-8be5-db9210b73c35)
 ![Profile drawing_restored_1_5](https://github.com/user-attachments/assets/9f322a5b-aa37-4752-ad72-be335e2eaf81)
