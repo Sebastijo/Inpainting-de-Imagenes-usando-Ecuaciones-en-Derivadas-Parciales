@@ -176,7 +176,7 @@ $$G(I) = S(D(I)) + T(I-D(I))$$
 ![total_inpainting](https://github.com/user-attachments/assets/4091fa4c-febc-407d-b651-daa3b4e3695d)
 ![total_texture_inpainting](https://github.com/user-attachments/assets/14ccd256-a04d-45e4-8a99-ee359509644b)
 ![total_structure_inpainting](https://github.com/user-attachments/assets/5f50a368-934e-469c-8fb9-f0c0ead5e89b)
-![main_dañada_restaurada](https://github.com/user-attachments/assets/fc0b98fc-cfce-4aa4-b790-c04811b64b60)
+![main dañada restaurada](https://github.com/user-attachments/assets/9096aa29-0f3f-4f1b-84bd-9ddf07366159)
 ![main_original_restaurada](https://github.com/user-attachments/assets/393af4c0-f373-4ea8-b442-e22f479a7e94)
 
 
