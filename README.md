@@ -98,15 +98,18 @@ Esto se realizó para cada uno de los 3 canales de RGB con lo que la cantidad de
 
 La imagen original que utilizamos es:
 
-![Imagen Original](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/5986a3b1-9174-4a59-bf9e-a01dc39bde56)
+![Imagen Original](https://github.com/user-attachments/assets/f11a7a03-9ae2-4faf-9b6a-86ac804a4063)
+
 
 La imagen dañada (con el $\Omega$) es:
 
-![Imagen Dañada](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/a3362bd4-203a-4ca7-bb04-ae5494d76495)
+![Imagen Danhada](https://github.com/user-attachments/assets/125d6d55-38ba-4bb4-8e16-fbbd0528580f)
+
 
 su restauración mediante inpainting es:
 
-![Imagen Restaurada](https://github.com/Sebastijo/Analisis-Numerico-de-EDPs/assets/144045099/0fe12bf2-5ca9-49ff-bc7d-96e34901b50f)
+![Imagen Restaurada](https://github.com/user-attachments/assets/046a1f94-a5ab-469e-93f1-98f10474dc0d)
+
 
 #### Comentario Sobre Los Resultados
 
