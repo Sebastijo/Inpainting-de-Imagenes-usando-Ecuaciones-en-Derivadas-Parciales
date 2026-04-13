@@ -187,16 +187,6 @@ Se logra un inpainting bastante bueno, pero aún se logra ver levemente el lugar
 ![main_error](https://github.com/user-attachments/assets/2f04ca9d-22c1-4b67-8be5-db9210b73c35)
 ![Profile drawing_restored_1_5](https://github.com/user-attachments/assets/9f322a5b-aa37-4752-ad72-be335e2eaf81)
 ![Profile drawing_restored_1](https://github.com/user-attachments/assets/3f1f56f3-42bf-49c7-97d9-b6d07942d41e)
-
-## Contribuyendo
-
-Si deseas contribuir a este proyecto, por favor sigue las siguientes instrucciones:
-
-1. Haz un fork del repositorio.
-2. Crea una nueva rama (`git checkout -b feature/AmazingFeature`).
-3. Realiza tus cambios (`git commit -m 'Add some AmazingFeature'`).
-4. Sube los cambios a tu rama (`git push origin feature/AmazingFeature`).
-5. Abre un Pull Request.
     
 ## Licencia
 
